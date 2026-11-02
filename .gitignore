@@ -1,0 +1,6 @@
+__pycache__/
+node_modules/
+target/
+*.pyc
+.DS_Store
+tools/ayu-cli/ayu

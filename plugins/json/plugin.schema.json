@@ -1,0 +1,782 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AyuGramm-IOS plugin API 1 through 9",
+  "type": "object",
+  "required": [
+    "format",
+    "apiVersion",
+    "id",
+    "name",
+    "author",
+    "version",
+    "summary",
+    "actions",
+    "limitations"
+  ],
+  "properties": {
+    "format": {
+      "const": "ayugram-ios-plugin"
+    },
+    "apiVersion": {
+      "enum": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]{1,64}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 2048
+    },
+    "convertedFrom": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    },
+    "sourceSHA256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "limitations": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "string",
+        "maxLength": 512
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "kind"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]{1,64}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "kind": {
+            "enum": [
+              "search",
+              "searchTerms",
+              "replaceText",
+              "outgoingReplace",
+              "cameraFlip",
+              "chatColors",
+              "arcadeGame",
+              "unlimitedAccounts",
+              "groupMentions",
+              "petpet",
+              "reactionsTotal",
+              "formattedCopy"
+            ]
+          },
+          "find": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 128
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 128
+          },
+          "prefix": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 128
+          },
+          "replacementCount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4096
+          },
+          "condition": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "required": [
+              "kind",
+              "value",
+              "negated"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "prefix",
+                  "suffix",
+                  "contains",
+                  "equals"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "negated": {
+                "type": "boolean"
+              }
+            }
+          },
+          "program": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/$defs/textProgram"
+              }
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "allOf": [
+                {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "replaceText",
+                        "outgoingReplace"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "not": {
+                    "required": [
+                      "program"
+                    ],
+                    "properties": {
+                      "program": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "then": {
+              "required": [
+                "find",
+                "replacement"
+              ],
+              "properties": {
+                "find": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "replacement": {
+                  "type": "string"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "find": {
+                  "type": "null"
+                },
+                "replacement": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "allOf": [
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "outgoingReplace"
+                    }
+                  }
+                },
+                {
+                  "not": {
+                    "required": [
+                      "program"
+                    ],
+                    "properties": {
+                      "program": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "then": {
+              "properties": {
+                "replacement": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "description": "Nonempty replacement must not expand UTF-8/UTF-16 length; native importer checks this."
+            },
+            "else": {
+              "properties": {
+                "prefix": {
+                  "type": "null"
+                },
+                "condition": {
+                  "type": "null"
+                },
+                "replacementCount": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "not": {
+              "required": [
+                "prefix",
+                "condition"
+              ],
+              "properties": {
+                "prefix": {
+                  "type": "string"
+                },
+                "condition": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "program"
+              ],
+              "properties": {
+                "program": {
+                  "type": "object"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "kind": {
+                  "const": "outgoingReplace"
+                },
+                "find": {
+                  "type": "null"
+                },
+                "replacement": {
+                  "type": "null"
+                },
+                "prefix": {
+                  "type": "null"
+                },
+                "condition": {
+                  "type": "null"
+                },
+                "replacementCount": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "catalogProof": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "manifestData",
+        "signature"
+      ],
+      "properties": {
+        "manifestData": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "maxLength": 21848
+        },
+        "signature": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "minLength": 88,
+          "maxLength": 88
+        }
+      },
+      "additionalProperties": false,
+      "description": "API 7: CryptoKit must verify this proof against the embedded catalog key."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "apiVersion": {
+            "const": 1
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "actions": {
+            "items": {
+              "properties": {
+                "condition": {
+                  "type": "null"
+                },
+                "replacementCount": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "apiVersion": {
+            "enum": [
+              1,
+              2
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "actions": {
+            "items": {
+              "properties": {
+                "kind": {
+                  "not": {
+                    "const": "cameraFlip"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "apiVersion": {
+            "enum": [
+              1,
+              2,
+              3
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "actions": {
+            "items": {
+              "properties": {
+                "kind": {
+                  "not": {
+                    "const": "chatColors"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "apiVersion": {
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "actions": {
+            "items": {
+              "properties": {
+                "kind": {
+                  "not": {
+                    "enum": [
+                      "arcadeGame",
+                      "unlimitedAccounts"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "apiVersion": {
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "actions": {
+            "items": {
+              "properties": {
+                "program": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "anyOf": [
+          {
+            "properties": {
+              "apiVersion": {
+                "const": 7
+              }
+            }
+          },
+          {
+            "required": [
+              "convertedFrom"
+            ],
+            "properties": {
+              "convertedFrom": {
+                "const": "ayugram/catalog-v1"
+              }
+            }
+          },
+          {
+            "required": [
+              "catalogProof"
+            ],
+            "properties": {
+              "catalogProof": {
+                "type": "object"
+              }
+            }
+          }
+        ]
+      },
+      "then": {
+        "required": [
+          "catalogProof",
+          "convertedFrom",
+          "sourceSHA256"
+        ],
+        "properties": {
+          "catalogProof": {
+            "type": "object"
+          },
+          "convertedFrom": {
+            "const": "ayugram/catalog-v1"
+          },
+          "sourceSHA256": {
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "catalogProof": {
+            "type": "null"
+          },
+          "convertedFrom": {
+            "not": {
+              "const": "ayugram/catalog-v1"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "apiVersion": {
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "actions": {
+            "items": {
+              "properties": {
+                "kind": {
+                  "not": {
+                    "enum": [
+                      "groupMentions",
+                      "petpet",
+                      "reactionsTotal"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "apiVersion": {
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "actions": {
+            "items": {
+              "properties": {
+                "kind": {
+                  "not": {
+                    "const": "formattedCopy"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "textProgram": {
+      "type": "object",
+      "required": [
+        "instructions"
+      ],
+      "properties": {
+        "instructions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/instruction"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "Native validator also limits total instructions to 64 and branch nesting to four."
+    },
+    "instruction": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "lower",
+                "upper",
+                "strip"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "value"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "prepend",
+                "append",
+                "removePrefix",
+                "removeSuffix"
+              ]
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "find",
+            "value"
+          ],
+          "properties": {
+            "op": {
+              "const": "replace"
+            },
+            "find": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4096
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "condition",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "const": "branch"
+            },
+            "condition": {
+              "type": "object",
+              "required": [
+                "kind",
+                "value",
+                "negated"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "prefix",
+                    "suffix",
+                    "contains",
+                    "equals"
+                  ]
+                },
+                "value": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "negated": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "body": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/instruction"
+              }
+            },
+            "otherwise": {
+              "type": "array",
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/instruction"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}
