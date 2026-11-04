@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "AyuGramm-IOS plugin API 1 through 9",
+  "title": "VoidGram plugin API 1 through 9",
   "type": "object",
   "required": [
     "format",

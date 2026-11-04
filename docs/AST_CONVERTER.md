@@ -6,7 +6,7 @@ does not contain the embedded interpreter or API 6 evaluator.
 
 ## Import and activation
 
-Open a `.plugin` from a chat or choose it in Settings → AyuGram → Plugins.
+Open a `.plugin` from a chat or choose it in Settings → VoidGram → Plugins.
 The app reads the complete source on a worker queue. Known adapters retain
 priority. If the original literal template does not match, the embedded Python
 parser converts supported source into a native JSON text program. The app shows
@@ -81,7 +81,7 @@ Upstream references: [Python Apple support](https://github.com/beeware/Python-Ap
 
 ## Compiler verification
 
-[macOS check 40318109369](https://github.com/dsn2fvhmn4-lgtm/AyuGramm-IOS/actions/runs/40318109369)
+[macOS check 40318109369](https://github.com/neosay-dev/VoidGram/actions/runs/40318109369)
 passed the real CPython Objective-C header check, Swift SDK checks, packaging and
 signing of 68 extension frameworks, 48 Python tests and 586 native model checks.
 The model checks include API 6 import, activation, execution, persistence,

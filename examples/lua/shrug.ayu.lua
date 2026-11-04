@@ -1,7 +1,7 @@
 -- ==AyuPlugin==
 -- @id shrug-lua
 -- @name Shrug (Lua)
--- @author AyuGramm team
+-- @author VoidGram team
 -- @version 1.0
 -- @description ".shrug" in a message becomes ¯\_(ツ)_/¯; a toast when the plugin starts.
 -- @permissions overlay

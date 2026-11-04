@@ -63,12 +63,12 @@
       {
         "feature": "Menu item CHAT_ACTION_MENU",
         "status": "ok",
-        "notes": "Message menu → AyuGram · Plugins."
+        "notes": "Message menu → VoidGram · Plugins."
       },
       {
         "feature": "Menu item MESSAGE_CONTEXT_MENU",
         "status": "ok",
-        "notes": "Message menu → AyuGram · Plugins."
+        "notes": "Message menu → VoidGram · Plugins."
       },
       {
         "feature": "Settings page",
@@ -146,7 +146,7 @@
     "metadata": {
       "id": "prefix_hook_demo",
       "name": "Prefix hook demo",
-      "author": "AyuGramm-IOS",
+      "author": "VoidGram",
       "version": "1.0",
       "description": "Convert [note] to NOTE only at the start of plain outgoing cloud text."
     },

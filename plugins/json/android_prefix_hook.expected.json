@@ -3,7 +3,7 @@
   "apiVersion": 1,
   "id": "prefix_hook_demo",
   "name": "Prefix hook demo",
-  "author": "AyuGramm-IOS",
+  "author": "VoidGram",
   "version": "1.0",
   "summary": "Convert [note] to NOTE only at the start of plain outgoing cloud text.",
   "actions": [
