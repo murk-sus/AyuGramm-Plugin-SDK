@@ -1,11 +1,12 @@
-# AyuGram для iOS — полный справочник API плагинов (27.5)
+# VoidGram для iOS — полный справочник API плагинов (27.6)
 
 Всё, что плагин может вызвать, и всё, что есть для разработчиков. Справочник собран по коду
-приложения 27.5: JS-прелюдии, операциям хоста, SDK и инструментам.
+приложения 27.6: JS-прелюдии, операциям хоста, SDK и инструментам. На устройстве вызовы по одному
+не проверялись: если поведение расходится с описанием, напишите нам.
 
 Обозначения:
 - `[разрешение]` — вызов работает, только если в заголовке плагина есть `@permissions разрешение`.
-- `[официальный]` — только для доверенных плагинов: с подписью AyuGram или инжект-плагинов, которые пользователь сам разрешил.
+- `[официальный]` — только для доверенных плагинов: с подписью VoidGram или инжект-плагинов, которые пользователь сам разрешил.
 - Удаление и очистка своего (`remove`, `clear`, `reset`, `hide`, `unsubscribe`) разрешения не требуют, кроме отмеченных.
 - `[инжект]` — нужен `@inject true`, работает только у доверенного плагина (см. «Безопасная зона»).
 - «→ Promise» — вызов асинхронный и возвращает Promise.
@@ -39,7 +40,7 @@
 - `ayu.hooks.points.lyricsText` = `lyrics.text` — текст песни перед показом, построчно `[инжект]`. Пустая строка убирает строку, тайминги сохраняются.
 - `ayu.hooks.points.linkOpen` = `link.open` — переписать ссылку прямо перед открытием `[links]`.
 - `ayu.hooks.points.messageRender` = `message.render` — изменить, как текст сообщения показывается в чате; сохранённые данные не меняются.
-- `ayu.hooks.points.notificationBeforeShow` = `notification.beforeShow` — изменить текст локального уведомления AyuGram, пустая строка его отменяет `[notifications]`.
+- `ayu.hooks.points.notificationBeforeShow` = `notification.beforeShow` — изменить текст локального уведомления VoidGram, пустая строка его отменяет `[notifications]`.
 - `ctx` — контекст хука: `{ peerId, messageId?, isSecret }`.
 
 ## 3. Отключение встроенных функций
@@ -79,6 +80,11 @@
 - `ayu.settings.get(key)` — текущее значение настройки (для переключателей `"1"` или `"0"`).
 - `ayu.storage.get(key)` — читает строку из хранилища плагина.
 - `ayu.storage.set(key, value)` — пишет строку; `null` удаляет. Всего до 64 КБ на плагин.
+- `ayu.storage.remove(key)` — удаляет значение.
+- `ayu.storage.has(key)` — есть ли значение.
+- `ayu.storage.getJSON(key, fallback)` — читает значение как JSON; если его нет, возвращает `fallback`.
+- `ayu.storage.setJSON(key, value)` — сохраняет значение как JSON.
+- `ayu.storage.increment(key, by)` — увеличивает число на `by` (по умолчанию 1) и возвращает результат.
 - `ayu.secrets.get(key)` — читает секрет из Keychain `[secrets]`.
 - `ayu.secrets.set(key, value)` — сохраняет секрет в Keychain, `null` удаляет `[secrets]`.
 
@@ -122,7 +128,7 @@
 
 ## 8. Свои экраны, вкладки, боковая панель, поиск
 
-- `ayu.screens.show({ id, title, sections })` — полноценная страница, которую рисует AyuGram. Секции: `{ title, footer, rows }`; виды строк: `text`, `button`, `toggle`, `link`, `value`. Нажатия приходят событием `screenAction` `[screens]`.
+- `ayu.screens.show({ id, title, sections })` — полноценная страница, которую рисует VoidGram. Секции: `{ title, footer, rows }`; виды строк: `text`, `button`, `toggle`, `link`, `value`. Нажатия приходят событием `screenAction` `[screens]`.
 - `ayu.ui.tabs.add({ id, title, icon, screen })` — вкладка в нижней панели со страницей плагина (не больше двух вкладок от плагинов) `[screens]`.
 - `ayu.ui.tabs.remove(id)` — убирает вкладку.
 - `ayu.ui.sidebar.show(screen)` — панель со страницей плагина, выезжает слева `[screens]`.
@@ -174,6 +180,14 @@
   Формат результата: `jpeg` или `png`.
 - `ayu.media.fromMessage(peerId, messageId)` → Promise — картинка из сообщения: `{ data, width, height }` `[messages.read]`.
 - `ayu.media.sendImage(peerId, base64, caption)` → Promise — отправляет картинку в чат `[messages]`.
+- `ayu.media.cutOutSticker(peerId, messageId)` → Promise — стикер из фото в сообщении с вырезанным фоном `[messages]`.
+- `ayu.media.describePhoto(peerId, messageId)` → Promise — текстовое описание фото из сообщения, или `null` `[messages.read]`.
+
+### Встроенные инструменты
+
+- `ayu.tools.chatStats(peerId)` → Promise — статистика чата по всей истории `[messages.read]`.
+- `ayu.tools.yearInReview(peerId)` → Promise — «Год в обзоре» для чата `[messages.read]`.
+- `ayu.tools.downloadChatMedia(peerId)` → Promise — скачать все медиа чата `[messages.read]`.
 
 ## 14. Музыкальный плеер
 
@@ -191,13 +205,41 @@
 ## 15. Сеть и ИИ
 
 - `ayu.net.fetch(url, { method, headers, body })` → Promise — HTTPS-запрос только к доменам из `@connect`. Ответ: `{ status, headers, text, json() }` `[network]`.
-- `ayu.ai.complete(prompt, { system, maxTokens })` → Promise — запрос к OpenAI-совместимому сервису, который пользователь указал в AyuGram → Инструменты; возвращает текст `[ai]`.
+- `ayu.ai.complete(prompt, { system, maxTokens })` → Promise — запрос к OpenAI-совместимому сервису, который пользователь указал в VoidGram → Инструменты; возвращает текст `[ai]`.
 
 ## 16. Устройство и система
 
 - `ayu.clipboard.write(text)` — копирует текст в буфер обмена `[clipboard]`.
+- `ayu.clipboard.read()` → Promise — читает текст из буфера, iOS покажет своё уведомление о вставке `[clipboard.read]`.
+- `ayu.clipboard.hasText()` → Promise — есть ли текст в буфере, не читая его `[clipboard]`.
+- `ayu.clipboard.clear()` — очищает буфер `[clipboard]`.
 - `ayu.device.info()` — `{ battery, charging, orientation, reduceMotion, lowPowerMode, locale }` `[device]`.
+- `ayu.device.battery()` — заряд 0…1 или `null` `[device]`.
+- `ayu.device.isCharging()` — заряжается ли телефон `[device]`.
+- `ayu.device.screen()` — `{ width, height, scale }` экрана или `null` `[device]`.
+- `ayu.device.darkMode()` — включена ли тёмная тема `[device]`.
+- `ayu.device.model()` — модель устройства `[device]`.
+- `ayu.device.systemVersion()` — версия iOS `[device]`.
+- `ayu.device.timezone()` — `{ id, offsetMinutes }` часового пояса `[device]`.
+- `ayu.device.isLowPower()` — включён ли режим энергосбережения `[device]`.
+- `ayu.device.freeDisk()` — свободное место в байтах или `null` `[device]`.
+- `ayu.device.memory()` — объём оперативной памяти устройства в байтах `[device]`.
+- `ayu.device.uptime()` — секунды с запуска системы `[device]`.
+- `ayu.device.thermalState()` — нагрев: `nominal`, `fair`, `serious`, `critical` `[device]`.
+- Заряд, зарядка, экран и тёмная тема берутся из снимка, который обновляется после каждого чтения, поэтому первое чтение может вернуть пустое значение.
 - `ayu.haptics.play(style)` — вибрация: `light`, `medium`, `heavy`, `soft`, `rigid`, `selection`, `success`, `warning`, `error`. Не работает, если в настройках включено «Без вибрации» `[haptics]`.
+- `ayu.haptics.pattern(styles, interval)` — серия до 16 откликов с интервалом `interval` мс (30–1000, по умолчанию 120) `[haptics]`.
+- `ayu.speech.speak(text, { language, rate })` — озвучивает текст на устройстве `[ui]`.
+- `ayu.speech.stop()` — останавливает озвучку `[ui]`.
+- `ayu.speech.isSpeaking()` — идёт ли озвучка `[ui]`.
+- `ayu.speech.voices()` — доступные голоса `[ui]`.
+- `ayu.notify.schedule({ id, title, body, seconds })` — локальное напоминание через `seconds` секунд, возвращает id `[notifications]`.
+- `ayu.notify.cancel(id)` — отменяет напоминание; плагин видит только свои `[notifications]`.
+- `ayu.notify.cancelAll()` — отменяет все напоминания плагина `[notifications]`.
+- `ayu.app.version()` — версия приложения.
+- `ayu.app.build()` — номер сборки.
+- `ayu.app.name()` — название приложения.
+- `ayu.app.plugins()` — установленные плагины `[{ id, name, enabled }]`.
 - `ayu.gestures.on('shake' | 'screenshot', fn)` — реакция на встряхивание телефона или скриншот.
 - `ayu.files.export(name, text)` — предлагает пользователю сохранить или поделиться текстовым файлом.
 - `ayu.i18n.language` — язык интерфейса (`ru`, `en`, …).
@@ -219,9 +261,9 @@
 - `ayu.permissions.has(name)` — проверяет, выдано ли разрешение.
 - `ayu.permissions.request(names, fn)` → Promise — просит пользователя выдать разрешения, `fn(granted)`.
 
-## 20. Реестр команды AyuGram
+## 20. Реестр команды VoidGram
 
-- `ayu.registry.developers.isVerified(peerId)` — есть ли у человека плашка «подтверждено командой AyuGram для iOS».
+- `ayu.registry.developers.isVerified(peerId)` — есть ли у человека плашка «подтверждено командой VoidGram для iOS».
 - `ayu.registry.developers.info(peerId)` — `{ verified, kind, text }` плашки.
 
 ## 21. TL-хуки (официальные плагины)
@@ -230,6 +272,156 @@
 - `ayu.tl.unblock(method)` — снимает блокировку `[официальный]`.
 - `ayu.tl.onRequest(fn)` — `fn(method, errorCode)` после каждого запроса к серверу: только имя метода, без содержимого (post_request) `[официальный]`.
 - `ayu.tl.onUpdate(fn)` — `fn(constructor)` для каждого входящего обновления: только имя конструктора (on_update) `[официальный]`.
+
+## 21а. Встроенные помощники (27.6)
+
+Разрешения не нужны. `crypto` и `encoding` выполняет приложение, поэтому они доступны из всех
+языков через `ayu.call`. Остальные работают внутри JS-плагина: **только JavaScript и TypeScript**.
+
+**`ayu.crypto`**
+- `ayu.crypto.sha256(text)` — SHA-256 текста в hex.
+- `ayu.crypto.sha1(text)` — SHA-1 в hex.
+- `ayu.crypto.sha512(text)` — SHA-512 в hex.
+- `ayu.crypto.md5(text)` — MD5 в hex.
+- `ayu.crypto.hmac(key, text)` — HMAC в hex.
+- `ayu.crypto.randomBytes(count)` — случайные байты в base64.
+- `ayu.crypto.uuid()` — случайный UUID.
+
+**`ayu.encoding`**
+- `ayu.encoding.base64Encode(text)` — текст в base64.
+- `ayu.encoding.base64Decode(base64)` — base64 в текст, или `null`.
+- `ayu.encoding.hexEncode(text)` — текст в hex.
+- `ayu.encoding.hexDecode(hex)` — hex в текст, или `null`.
+
+**`ayu.text`**
+- `ayu.text.capitalize(text)` — первая буква заглавная.
+- `ayu.text.titleCase(text)` — каждое слово с заглавной.
+- `ayu.text.reverse(text)` — текст задом наперёд.
+- `ayu.text.truncate(text, length, ellipsis)` — обрезает до длины с многоточием.
+- `ayu.text.slugify(text)` — делает из текста адресную строку.
+- `ayu.text.wordCount(text)` — число слов.
+- `ayu.text.charCount(text)` — число символов.
+- `ayu.text.stripEmoji(text)` — убирает эмодзи.
+- `ayu.text.escapeHtml(text)` / `unescapeHtml(text)` — экранирует HTML и обратно.
+- `ayu.text.translit(text)` — транслитерация.
+- `ayu.text.swapLayout(text)` — меняет раскладку: `ghbdtn` ⇄ `привет`.
+- `ayu.text.mock(text)` — чЕрЕдУеТ рЕгИсТр.
+- `ayu.text.between(text, start, end)` — текст между двумя строками, или `null`.
+- `ayu.text.template(text, vars)` — подставляет значения в шаблон.
+- `ayu.text.normalizeSpaces(text)` — убирает лишние пробелы.
+- `ayu.text.removeUrls(text)` — убирает ссылки.
+- `ayu.text.removeMentions(text)` — убирает упоминания.
+- `ayu.text.detectScript(text)` — алфавит: `cyrillic`, `latin`, `mixed`, `other`.
+- `ayu.text.wrap(text, width)` — переносит строки по ширине.
+- `ayu.text.occurrences(text, part)` — сколько раз встречается подстрока.
+- `ayu.text.randomString(length, alphabet)` — случайная строка, до 10000 символов.
+- `ayu.text.isEmojiOnly(text)` — состоит ли текст только из эмодзи.
+- `ayu.text.firstLine(text)` — первая строка.
+
+**`ayu.date`**
+- `ayu.date.format(date, pattern)` — форматирует дату, например `DD.MM.YYYY HH:mm`.
+- `ayu.date.relative(date, language)` — «5 минут назад».
+- `ayu.date.addDays(date, days)` — прибавляет дни.
+- `ayu.date.diffDays(from, to)` — разница в днях.
+- `ayu.date.isToday(date)` — сегодня ли это.
+- `ayu.date.startOfDay(date)` — начало дня.
+- `ayu.date.parseDuration(text)` — `"1h 30m"` в миллисекунды, единицы `ms s m h d w`; или `null`.
+- `ayu.date.formatDuration(ms, language)` — миллисекунды в читаемый вид.
+- `ayu.date.weekday(date, language)` — день недели.
+- `ayu.date.monthName(date, language)` — название месяца.
+- `ayu.date.isWeekend(date)` — выходной ли это.
+- `ayu.date.daysInMonth(date)` — дней в месяце.
+- `ayu.date.age(birth, at)` — возраст в годах.
+- `ayu.date.unix(date)` — секунды Unix.
+- `ayu.date.fromUnix(seconds)` — дата из секунд Unix.
+- `ayu.date.countdown(target)` — `{ days, hours, minutes, seconds }` до даты.
+
+**`ayu.color`**
+- `ayu.color.hexToRgb(hex)` — `{ r, g, b }` или `null`.
+- `ayu.color.rgbToHex(r, g, b)` — цвет в `#RRGGBB`.
+- `ayu.color.lighten(hex, amount)` — светлее.
+- `ayu.color.darken(hex, amount)` — темнее.
+- `ayu.color.mix(a, b, amount)` — смешивает два цвета.
+- `ayu.color.contrastText(hex)` — чёрный или белый текст на этом фоне.
+- `ayu.color.random()` — случайный цвет.
+- `ayu.color.toHsl(hex)` — `{ h, s, l }` или `null`.
+- `ayu.color.fromHsl(h, s, l)` — цвет из HSL.
+- `ayu.color.invert(hex)` — обратный цвет.
+- `ayu.color.grayscale(hex)` — оттенок серого.
+- `ayu.color.rgba(hex, alpha)` — строка `rgba(...)`.
+
+**`ayu.math`**
+- `ayu.math.clamp(value, min, max)` — ограничивает диапазоном.
+- `ayu.math.lerp(a, b, t)` — линейная интерполяция.
+- `ayu.math.random(min, max)` — случайное число.
+- `ayu.math.randomInt(min, max)` — случайное целое.
+- `ayu.math.round(value, digits)` — округляет до знаков.
+- `ayu.math.sum(list)` — сумма.
+- `ayu.math.average(list)` — среднее.
+- `ayu.math.median(list)` — медиана.
+- `ayu.math.percent(part, total)` — процент.
+- `ayu.math.factorial(n)` — факториал.
+- `ayu.math.gcd(a, b)` — наибольший общий делитель.
+- `ayu.math.lcm(a, b)` — наименьшее общее кратное.
+- `ayu.math.isPrime(n)` — простое ли число; `null` выше 10¹².
+- `ayu.math.fibonacci(n)` — число Фибоначчи.
+- `ayu.math.mod(a, b)` — остаток, всегда неотрицательный при положительном `b`.
+- `ayu.math.roundTo(value, step)` — округляет до кратного шага.
+- `ayu.math.range(start, end, step)` — последовательность, до 100000 чисел.
+
+**`ayu.url`**
+- `ayu.url.parse(url)` — `{ protocol, host, port, path, query, hash }` или `null`.
+- `ayu.url.build(base, params)` — собирает ссылку с параметрами.
+- `ayu.url.param(url, name)` — значение параметра.
+- `ayu.url.isUrl(text)` — ссылка ли это.
+- `ayu.url.extract(text)` — все ссылки из текста.
+- `ayu.url.domain(url)` — домен.
+
+**`ayu.array`**
+- `ayu.array.chunk(list, size)` — делит на части.
+- `ayu.array.unique(list, key)` — убирает повторы.
+- `ayu.array.shuffle(list)` — перемешивает.
+- `ayu.array.sample(list)` — случайный элемент.
+- `ayu.array.groupBy(list, key)` — группирует.
+- `ayu.array.sortBy(list, key, descending)` — сортирует по ключу.
+- `ayu.array.flatten(list, depth)` — разворачивает вложенные массивы.
+- `ayu.array.zip(...lists)` — соединяет массивы попарно.
+- `ayu.array.countBy(list, key)` — считает по ключу.
+- `ayu.array.partition(list, fn)` — делит на подходящие и остальные.
+- `ayu.array.last(list)` — последний элемент.
+- `ayu.array.compact(list)` — убирает `null`, `undefined`, `false`, пустые строки и `NaN`, ноль оставляет.
+- `ayu.array.intersect(a, b)` — общие элементы.
+- `ayu.array.difference(a, b)` — элементы `a`, которых нет в `b`.
+
+**`ayu.object`**
+- `ayu.object.pick(value, keys)` — только указанные ключи.
+- `ayu.object.omit(value, keys)` — всё, кроме указанных ключей.
+- `ayu.object.merge(target, source)` — глубокое слияние.
+- `ayu.object.get(value, path, fallback)` — значение по пути `a.b.0`.
+- `ayu.object.set(value, path, item)` — записывает по пути.
+
+**`ayu.validate`**
+- `ayu.validate.email(text)` — похоже ли на почту.
+- `ayu.validate.phone(text)` — похоже ли на телефон.
+- `ayu.validate.username(text)` — подходит ли как юзернейм.
+- `ayu.validate.hexColor(text)` — цвет ли это в hex.
+
+**`ayu.async`**
+- `ayu.async.sleep(ms)` — пауза, возвращает Promise.
+- `ayu.async.debounce(fn, ms)` — вызывает `fn` после паузы в вызовах.
+- `ayu.async.throttle(fn, ms)` — вызывает `fn` не чаще раза в `ms`.
+- `ayu.async.retry(fn, times, delay)` — повторяет при ошибке.
+- `ayu.async.timeout(promise, ms)` — ошибка, если не успели за `ms`.
+
+**`ayu.format`**
+- `ayu.format.bytes(value, digits)` — размер: `1.5 MB`.
+- `ayu.format.number(value, digits)` — число с разделителями.
+- `ayu.format.plural(count, forms)` — склонение: `['яблоко', 'яблока', 'яблок']`.
+
+**`ayu.extract`**
+- `ayu.extract.mentions(text)` — все упоминания.
+- `ayu.extract.hashtags(text)` — все хештеги.
+- `ayu.extract.emails(text)` — все адреса почты.
 
 ## 22. События (`ayu.on`)
 
@@ -301,6 +493,18 @@
 - `permissions.has`, `permissions.request` — разрешения.
 - `registry.isVerified` — плашка команды.
 - `tl.block`, `tl.unblock`, `tl.observe` — TL-хуки.
+- `tools.chatStats`, `tools.yearInReview`, `tools.downloadChatMedia` — встроенные инструменты.
+- `media.cutOutSticker`, `media.describePhoto` — стикер из фото и описание фото.
+- `crypto.sha256`, `crypto.sha1`, `crypto.sha512`, `crypto.md5`, `crypto.hmac`, `crypto.randomBytes`, `crypto.uuid` — хеши и случайные значения.
+- `encoding.base64Encode`, `encoding.base64Decode`, `encoding.hexEncode`, `encoding.hexDecode` — кодировки.
+- `app.version`, `app.build`, `app.name`, `app.plugins` — приложение.
+- `device.battery`, `device.isCharging`, `device.screen`, `device.darkMode`, `device.model`, `device.systemVersion`, `device.timezone`, `device.isLowPower`, `device.freeDisk`, `device.memory`, `device.uptime`, `device.thermalState` — устройство.
+- `clipboard.read`, `clipboard.hasText`, `clipboard.clear` — буфер обмена.
+- `haptics.pattern` — серия откликов.
+- `speech.speak`, `speech.stop`, `speech.isSpeaking`, `speech.voices` — озвучка.
+- `notify.schedule`, `notify.cancel`, `notify.cancelAll` — напоминания.
+
+Имена аргументов те же, что в JS-обёртках: смотрите `prelude/prelude.swift`.
 
 ---
 
@@ -349,22 +553,23 @@
 
 ## Разрешения
 
-- `ui` — диалоги и меню действий, кнопки в панели чата, прокрутка чата.
+- `ui` — диалоги и меню действий, кнопки в панели чата, прокрутка чата, озвучка.
 - `menu` — пункты в меню сообщений.
 - `profile` — блоки и кнопки в профиле.
 - `overlay` — эффекты поверх приложения, плавающие кнопки, фон чата, спектр, визуализатор и холст плеера.
 - `fonts` — шрифты.
 - `badges` — бейджи и украшения аватарок у чатов.
-- `clipboard` — запись в буфер обмена.
+- `clipboard` — запись и очистка буфера обмена.
+- `clipboard.read` — ⚠️ чтение буфера обмена.
 - `device` — сведения об устройстве.
 - `haptics` — вибрация.
 - `network` — интернет, только домены из `@connect`.
 - `messages` — отправка, правка и реакции от имени пользователя; запись закладок, заметок и никнеймов.
-- `messages.read` — ⚠️ чтение сообщений, закладок, заметок и никнеймов, картинок из сообщений; фильтры сообщений.
+- `messages.read` — ⚠️ чтение сообщений, закладок, заметок и никнеймов, картинок из сообщений; фильтры сообщений; статистика и инструменты чата.
 - `ai` — запросы к ИИ пользователя.
 - `secrets` — секреты в Keychain.
 - `composer` — кнопки над клавиатурой и текст в поле ввода.
-- `notifications` — текст уведомлений.
+- `notifications` — текст уведомлений и локальные напоминания.
 - `links` — переписывание ссылок.
 - `screens` — свои страницы, вкладки, боковая панель, поиск.
 - `commands` — команды через точку.
@@ -375,7 +580,7 @@
 ## Безопасная зона и подписи
 
 - Обычные плагины (текст, отключение функций, хранилище, настройки, интерфейс) можно ставить откуда угодно.
-- Плагины с `@inject` ставятся только с подписью AyuGram (Ed25519, в каталоге отмечены «✓ официальный»).
+- Плагины с `@inject` ставятся только с подписью VoidGram (Ed25519, в каталоге отмечены «✓ официальный»).
 - Неподписанный инжект-плагин можно разрешить в настройках разработчика: «Инжект-плагины из неофициальных источников». После предупреждения вся ответственность на пользователе.
 - Инжект-API проверяется и во время работы: недоверенный плагин получает ошибку в консоли.
 - TL-хуки работают только у доверенных плагинов (официальных или разрешённых пользователем).
@@ -443,17 +648,17 @@
 ## Инструменты
 
 - **ayu-cli** (`tools/ayu-cli`):
-  - `ayu new <имя> [-lang js]` — заготовка плагина;
+  - `ayu new <имя> [-lang js|ts|py|rust|zig|as|go]` — заготовка плагина на 7 языках;
   - `ayu check <файл>` — проверка заголовка, разрешений и размера;
   - `ayu pack <in.wasm> <manifest.json> <out.wasm>` — вшивает манифест в WebAssembly;
   - `ayu sha <файл>` — SHA-256 для каталога;
   - `ayu dev <файл> [-port 8765]` — горячая перезагрузка: плагин обновляется на телефоне по WebSocket при каждом сохранении.
-- **mock-runner** (`tools/mock-runner`) — запуск JS-плагина в Node на настоящей прелюдии приложения, без телефона: `--send "текст"`, `--event имя '{json}'`, `--link https://…`. Там же тесты прелюдии и фаззинг Plugin API (`node --test prelude.test.ts fuzz.test.ts`), фаззинг прогоняется в CI.
+- **mock-runner** (`tools/mock-runner`) — запуск JS-плагина в Node на настоящей прелюдии приложения, без телефона: `--send "текст"`, `--event имя '{json}'`, `--link https://…`. Там же тесты прелюдии и API 27.6 и фаззинг Plugin API (`PRELUDE=prelude/prelude.swift node --test prelude.test.ts fuzz.test.ts api276.test.ts`), фаззинг прогоняется в CI.
 - **Типы**: TypeScript (`sdk/typescript/ayu.d.ts`) и Python (`sdk/python/ayu.pyi`) — для автодополнения в редакторе.
 
-## В приложении (Настройки → AyuGram → Для разработчиков)
+## В приложении (Настройки → VoidGram → Для разработчиков)
 
-Раздел открывается пятью нажатиями на версию AyuGram, подтверждением и перезапуском.
+Раздел открывается пятью нажатиями на версию VoidGram, подтверждением и перезапуском.
 - **Консоль плагинов** — `print`, ошибки и активность хуков, REPL (выполнить код внутри плагина), расход памяти приложения.
 - **Профайлер** — сообщает о медленных плагинах.
 - **Мягкие лимиты плагинов** — тайм-аут хука до 2 с, ошибки скриптов показываются всплывающими сообщениями.
@@ -463,13 +668,27 @@
 
 ## Каталог плагинов и шрифтов
 
-- Репозиторий: [murk-sus/AyuGramm-Plugins](https://github.com/murk-sus/AyuGramm-Plugins). Плагины лежат в `plugins/<id>/`, шрифты — в `fonts/<id>/`. В папке: сам файл, `screenshot.png|jpg|webp` и `README.md` с описанием.
+- Репозиторий: [murk-sus/VoidGram-plugins](https://github.com/murk-sus/VoidGram-plugins). Плагины лежат в `plugins/<id>/`, шрифты — в `fonts/<id>/`. В папке: сам файл, `screenshot.png|jpg|webp` и `README.md` с описанием.
 - В приложении: Плагины → значок сумки. Там поиск, разделы «Плагины» и «Шрифты», установка в одно нажатие с проверкой SHA-256 и кнопка «Обновить», когда вышла новая версия.
 - Поля записи каталога: `id`, `name`, `author`, `version`, `description`, `tags`, `kind`, `url`, `sha256`, `size`, `signature`, `injects`, `changelog`, `category`, `screenshots`.
 - При обновлении предыдущая версия сохраняется, и на неё можно откатиться.
 - Автообновление плагинов при запуске включается в «Приватность и мелочи». Инжект-плагины автоматически не обновляются.
 - Публикация: pull request в репозиторий или бот команды @ayugram_dev_settings_bot. Бот проверяет файл, записывает автора (ник в Telegram), описание и скриншот, а каталог и README пересобираются автоматически.
 - Шрифты: `.ttf` или `.otf` до 15 МБ, с PostScript-именем. Выбранный шрифт становится шрифтом приложения после перезапуска.
+
+## Почему в API осталось `ayu`
+
+Проект теперь называется VoidGram, но эти имена не менялись: на них написаны все плагины, и их
+сверяют уже установленные версии приложения.
+
+- Глобальный объект `ayu` и все `ayu.*`, `ayu_init`, `ayu_dispatch`, секция `ayu.manifest`.
+- Заголовок `==AyuPlugin==`, расширения `.ayujs`, `.ayupy`, `.ayulua`, `.ayuwasm`, форматы `ayu-iosplug-1` и `ayu-iosplug-2`.
+- Форматы каталога: `ayugram-plugin-catalog`, `ayugram-font-catalog`, `ayugram-verified`, `ayugram-revoked`, `ayugram-ios-plugin`, `ayugram/catalog-v1`.
+- Крейт Rust `ayugram_plugin`, модуль Go `github.com/murk-sus/ayugram-sdk` и CLI `ayu`.
+- Ник бота команды `@ayugram_dev_settings_bot`.
+
+Встроенные функции приложения (статистика чата, «Год в обзоре», стикер из фото, описание фото,
+скачать все медиа, закладки) теперь сами плагины. Их код — хорошие примеры: `examples/code-plugins/`.
 
 ## Минимальные примеры
 

@@ -1,8 +1,8 @@
-# AyuGramm Plugin SDK
+# VoidGram Plugin SDK
 
-Всё для разработчиков плагинов [AyuGram для iOS](https://github.com/dsn2fvhmn4-lgtm/AyuGramm-IOS):
+Всё для разработчиков плагинов [VoidGram для iOS](https://github.com/neosay-dev/VoidGram):
 полный справочник API, документация, примеры, SDK для семи языков, инструменты и исходники всех
-плагинов из [каталога](https://github.com/murk-sus/AyuGramm-Plugins).
+плагинов из [каталога](https://github.com/murk-sus/VoidGram-plugins).
 
 **Начать: [API.md](API.md)** — каждый вызов `ayu.*` с описанием, разрешения, события, лимиты.
 
@@ -10,9 +10,10 @@
 
 | Папка | Что внутри |
 |---|---|
-| [`API.md`](API.md) | Полный справочник API (27.5) и всё для разработчиков |
+| [`API.md`](API.md) | Полный справочник API (27.6) и всё для разработчиков |
 | [`docs/`](docs) | Документация: код-плагины, JSON-плагины, конвертер, Python-рантайм, каталог, облачные сборки |
 | [`examples/`](examples) | Примеры на JavaScript, Python, Lua и Rust |
+| [`examples/code-plugins/`](examples/code-plugins) | Бывшие встроенные функции, теперь плагины: статистика чата, «Год в обзоре», стикер из фото, описание фото, скачать все медиа, закладки |
 | [`template/`](template) | Заготовка JS-плагина |
 | [`sdk/`](sdk) | SDK и типы: TypeScript, Python, Lua, Rust, Zig, Go (TinyGo), AssemblyScript |
 | [`plugins/`](plugins) | Исходники всех плагинов каталога: в папке каждого файл, README и скриншот |
@@ -25,7 +26,9 @@
 
 ## Быстрый старт
 
-Плагин — один файл. Установка: AyuGram → Плагины → **+**, или нажмите на файл в чате.
+Плагин — один файл. Установка: VoidGram → Плагины → **+**, или нажмите на файл в чате.
+Подходит любое написание расширения: `.ayujs` / `.ayu.js`, `.ayupy` / `.ayu.py`, `.ayulua` / `.ayu.lua`, `.ayuwasm` / `.ayu.wasm`.
+Имена `ayu.*` и `==AyuPlugin==` остались прежними, см. конец [API.md](API.md).
 
 **JavaScript** (`.ayujs` / `.ayu.js`):
 ```js
@@ -55,15 +58,18 @@ node tools/mock-runner/cli.ts --prelude prelude/prelude.swift examples/smart-quo
 cd tools/ayu-cli && go build -o ayu . && ./ayu check ../../examples/smart-quotes.ayu.js
 ./ayu dev my-plugin.ayu.js            # горячая перезагрузка по WebSocket при каждом сохранении
 
+# Тесты API на прелюдии
+cd tools/mock-runner && PRELUDE=../../prelude/prelude.swift node --test prelude.test.ts fuzz.test.ts api276.test.ts
+
 # Та же проверка, что в CI каталога
 node tools/catalog/test_plugins.js my-plugin.ayu.js
 ```
 
 ## Публикация в каталог
 
-- Pull request в [murk-sus/AyuGramm-Plugins](https://github.com/murk-sus/AyuGramm-Plugins): `plugins/<id>/plugin.ayu.js` (или `.ayu.py`, `.ayu.lua`, `.wasm`, `.iosplug`).
-- Или через команду AyuGram: бот проверит файл, запишет автора, описание и скриншот, а каталог и README соберутся сами.
-- Плагины с `@inject` в каталоге подписываются ключом AyuGram (Ed25519) и отмечаются «✓ официальный».
+- Pull request в [murk-sus/VoidGram-plugins](https://github.com/murk-sus/VoidGram-plugins): `plugins/<id>/plugin.ayu.js` (или `.ayu.py`, `.ayu.lua`, `.wasm`, `.iosplug`).
+- Или через команду VoidGram: бот проверит файл, запишет автора, описание и скриншот, а каталог и README соберутся сами.
+- Плагины с `@inject` в каталоге подписываются ключом VoidGram (Ed25519) и отмечаются «✓ официальный».
 
 Подробности: [`docs/CODE_PLUGINS.md`](docs/CODE_PLUGINS.md), [`docs/catalog/`](docs/catalog).
 
@@ -81,4 +87,4 @@ node tools/catalog/test_plugins.js my-plugin.ayu.js
 - [docs/catalog/](docs/catalog) — README каталога и облачные сборки для разработчиков.
 
 Документы в `docs/` перенесены из репозиториев приложения и каталога. Где они расходятся с
-[API.md](API.md), верен API.md: он собран по коду версии 27.5.
+[API.md](API.md), верен API.md: он собран по коду версии 27.6.

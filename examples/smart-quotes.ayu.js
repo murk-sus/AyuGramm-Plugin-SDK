@@ -1,7 +1,7 @@
 // ==AyuPlugin==
 // @id smart-quotes
 // @name Smart quotes
-// @author AyuGramm-IOS
+// @author VoidGram
 // @version 1.0
 // @description Replaces the outgoing-text handler: straight quotes become «ёлочки» or “curly” quotes, "--" becomes an em dash. Turns off the fast-share button as a feature-toggle example.
 // ==/AyuPlugin==

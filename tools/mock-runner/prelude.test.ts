@@ -1,5 +1,5 @@
 // Tests of the app's JavaScript prelude (27.5 APIs), run with: node --test tools/mock-runner/prelude.test.ts
-// PRELUDE points at AyuScriptRuntime.swift or at the AyuGram patch (default: the patch in this repo).
+// PRELUDE points at AyuScriptRuntime.swift or at the VoidGram patch (default: the patch in this repo).
 import assert from "node:assert/strict";
 import path from "node:path";
 import { test } from "node:test";
@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { loadPrelude, Sandbox } from "./mock.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const prelude = loadPrelude(process.env.PRELUDE ?? path.join(root, "patches/ayugram-big-update.patch"));
+const prelude = loadPrelude(process.env.PRELUDE ?? path.join(root, "patches/voidgram-big-update.patch"));
 
 test("dot commands replace or cancel the outgoing text", () => {
   const sandbox = new Sandbox({ prelude });

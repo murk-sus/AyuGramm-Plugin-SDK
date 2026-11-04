@@ -1,4 +1,4 @@
-# Плагины AyuGram iOS
+# Плагины VoidGram iOS
 
 `.iosplug` включает встроенные iOS-функции; Python/Android-код не запускается.
 Для пакетов `ayu-iosplug-2`, Pill Labels и Mini Avatar нужна IPA с этим обновлением движка.
