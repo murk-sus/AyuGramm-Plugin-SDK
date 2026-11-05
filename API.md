@@ -249,7 +249,7 @@ API теперь называется `void`. В JavaScript `void` — заре�
 - `ayu.device.memory()` — объём оперативной памяти устройства в байтах `[device]`.
 - `ayu.device.uptime()` — секунды с запуска системы `[device]`.
 - `ayu.device.thermalState()` — нагрев: `nominal`, `fair`, `serious`, `critical` `[device]`.
-- `ayu.accessibility.info()` — `{ voiceOver, reduceMotion, reduceTransparency, boldText, invertColors, switchControl, closedCaptioning, buttonShapes, grayscale, onOffSwitchLabels, dynamicType }`.
+- `ayu.accessibility.info()` — `{ voiceOver, reduceMotion, reduceTransparency, boldText, invertColors, switchControl, closedCaptioning, grayscale, dynamicType }`.
 - `ayu.appearance.info()` — `{ dark, classicDesign, noGlass, blurGlass, glassStyle, slowMotion, throttled }`; `throttled` — включён режим энергосбережения или телефон горячий.
 - Заряд, зарядка, экран и тёмная тема берутся из снимка, который обновляется после каждого чтения, поэтому первое чтение может вернуть пустое значение.
 - `ayu.haptics.play(style)` — вибрация: `light`, `medium`, `heavy`, `soft`, `rigid`, `selection`, `success`, `warning`, `error`. Не работает, если в настройках включено «Без вибрации» `[haptics]`.
