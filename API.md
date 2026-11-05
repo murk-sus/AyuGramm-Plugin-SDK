@@ -15,6 +15,22 @@
 в Python они записываются в snake_case (`scroll_to`, `add_button`), в Lua и Rust есть
 универсальный вызов `call(op, args)` (раздел «Низкоуровневые операции»).
 
+### `void` и старые плагины
+
+API теперь называется `void`. В JavaScript `void` — зарезервированное слово, поэтому в JS-плагинах
+пишите `voidgram.…` (или `globalThis.void.…`); в Python, Lua и Rust — `void.…`. `ayu.…` остался тем же
+объектом, так что все плагины прежнего вида работают без изменений, и оба имени можно смешивать.
+
+- Расширения: `.voidjs`, `.void.js`, `.voidpy`, `.void.py`, `.voidlua`, `.void.lua`, `.voidwasm`, `.void.wasm`
+  рядом со старыми `.ayujs`/`.ayu.js` и обычными `.js`, `.py`, `.lua`, `.wasm`.
+- Заголовок: `==VoidPlugin==` или `==AyuPlugin==`.
+- Wasm: импорт `void.host` или `ayu.host`, экспорты `void_alloc`/`void_dispatch` или `ayu_alloc`/`ayu_dispatch`,
+  секция `void.manifest` или `ayu.manifest`.
+- Перевод файла: `python3 sdk/tools/convert_void.py plugin.ayu.js`.
+
+Ниже сохранены имена `ayu.*`, чтобы существующие описания и примеры оставались верными. Замените
+`ayu` на `voidgram` в JS или на `void` в Python/Lua/Rust, чтобы получить новый вид.
+
 ---
 
 ## 1. Основное
@@ -30,6 +46,10 @@
 - `setTimeout(fn, ms)` — разовый таймер в очереди плагина.
 - `setInterval(fn, ms)` — повторяющийся таймер (не чаще раза в 100 мс).
 - `clearTimeout(id)` / `clearInterval(id)` — отменяют таймер.
+- `ayu.events.off(event, fn)` — снимает подписку, сделанную через `ayu.on(event, fn)`; без `fn` снимает все подписки на событие.
+- `ayu.sdk.capabilities()` — список методов, которые реально отвечают в этой сборке.
+- `ayu.plugin.resources()` — `{ id, thermalState, lowPowerMode, uptime, storageLimit }` текущего плагина.
+- `ayu.debug.inspect()` — то же для отладки: состояние, нагрев, режим энергосбережения.
 
 ## 2. Хуки (перехват и замена поведения)
 
@@ -85,6 +105,7 @@
 - `ayu.storage.getJSON(key, fallback)` — читает значение как JSON; если его нет, возвращает `fallback`.
 - `ayu.storage.setJSON(key, value)` — сохраняет значение как JSON.
 - `ayu.storage.increment(key, by)` — увеличивает число на `by` (по умолчанию 1) и возвращает результат.
+- `ayu.storage.transaction(values)` — записывает несколько ключей за один вызов: `{ key: 'value' }`, `null` удаляет.
 - `ayu.secrets.get(key)` — читает секрет из Keychain `[secrets]`.
 - `ayu.secrets.set(key, value)` — сохраняет секрет в Keychain, `null` удаляет `[secrets]`.
 
@@ -138,6 +159,8 @@
 ## 9. Чат
 
 - `ayu.chat.scrollTo(messageId)` — прокручивает открытый чат к сообщению `[ui]`.
+- `ayu.chat.draft.insert(text)` — дописывает текст в поле ввода открытого чата, не отправляя его `[composer]`.
+- `ayu.chat.draft.clear()` — очищает поле ввода `[composer]`.
 - `ayu.chat.toolbar.add({ id, title, icon }, onTap)` — кнопка в панели чата над клавиатурой; `onTap(peerId)` получает открытый чат `[ui]`.
 - `ayu.chat.toolbar.remove(id)` — убирает кнопку.
 - `ayu.chat.toolbar.filter({ words, authors })` — фильтр сообщений открытого чата по словам и авторам `[messages.read]`.
@@ -226,6 +249,8 @@
 - `ayu.device.memory()` — объём оперативной памяти устройства в байтах `[device]`.
 - `ayu.device.uptime()` — секунды с запуска системы `[device]`.
 - `ayu.device.thermalState()` — нагрев: `nominal`, `fair`, `serious`, `critical` `[device]`.
+- `ayu.accessibility.info()` — `{ voiceOver, reduceMotion, reduceTransparency, boldText, invertColors, switchControl, closedCaptioning, grayscale, dynamicType }`.
+- `ayu.appearance.info()` — `{ dark, classicDesign, noGlass, blurGlass, glassStyle, slowMotion, throttled }`; `throttled` — включён режим энергосбережения или телефон горячий.
 - Заряд, зарядка, экран и тёмная тема берутся из снимка, который обновляется после каждого чтения, поэтому первое чтение может вернуть пустое значение.
 - `ayu.haptics.play(style)` — вибрация: `light`, `medium`, `heavy`, `soft`, `rigid`, `selection`, `success`, `warning`, `error`. Не работает, если в настройках включено «Без вибрации» `[haptics]`.
 - `ayu.haptics.pattern(styles, interval)` — серия до 16 откликов с интервалом `interval` мс (30–1000, по умолчанию 120) `[haptics]`.
