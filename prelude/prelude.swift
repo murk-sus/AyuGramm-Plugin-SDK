@@ -42,6 +42,8 @@ enum AyuScriptInstance {
         // Dot commands share one outgoing-text hook.
         const commandHandlers = {};
         let commandHookInstalled = false;
+        // `ayu.on` registrations, so `ayu.events.off` can silence one without a native call.
+        const listeners = new Map();
         function installCommandHook() {
             if (commandHookInstalled) return;
             commandHookInstalled = true;
@@ -131,7 +133,23 @@ enum AyuScriptInstance {
             warn: function () { host.log('warning', fmt(arguments)); },
             error: function () { host.log('error', fmt(arguments)); },
             toast: (value) => host.toast(text(value)),
-            on: (event, fn) => { if (typeof fn === 'function') host.on(text(event), fn); },
+            on: (event, fn) => {
+                if (typeof fn !== 'function') return;
+                const name = text(event);
+                const record = { fn: fn, active: true };
+                const list = listeners.get(name) || [];
+                list.push(record);
+                listeners.set(name, list);
+                host.on(name, function (payload) { if (record.active) fn(payload); });
+            },
+            events: Object.freeze({
+                off: (event, fn) => {
+                    const list = listeners.get(text(event)) || [];
+                    for (const record of list) {
+                        if (record.fn === fn || fn === undefined) record.active = false;
+                    }
+                }
+            }),
             hooks: Object.freeze({
                 before: (point, fn) => register(point, 'before', fn),
                 after: (point, fn) => register(point, 'after', fn),
@@ -318,6 +336,10 @@ enum AyuScriptInstance {
             }),
             chat: Object.freeze({
                 scrollTo: (messageId) => host.call('chat.scrollTo', { messageId: Number(messageId) }),
+                draft: Object.freeze({
+                    insert: (value) => host.call('chat.draft.insert', { text: text(value) }),
+                    clear: () => host.call('chat.draft.clear', {})
+                }),
                 toolbar: Object.freeze({
                     add: (button, fn) => {
                         const ok = host.call('chat.toolbar.add', button || {});
@@ -438,6 +460,21 @@ enum AyuScriptInstance {
                 build: () => hostValue('app.build', {}),
                 name: () => hostValue('app.name', {}),
                 plugins: () => hostValue('app.plugins', {}) || []
+            }),
+            sdk: Object.freeze({
+                capabilities: () => hostValue('sdk.capabilities', {}) || []
+            }),
+            plugin: Object.freeze({
+                resources: () => hostValue('plugin.resources', {}) || {}
+            }),
+            debug: Object.freeze({
+                inspect: () => hostValue('debug.inspect', {}) || {}
+            }),
+            accessibility: Object.freeze({
+                info: () => hostValue('accessibility.info', {}) || {}
+            }),
+            appearance: Object.freeze({
+                info: () => hostValue('appearance.info', {}) || {}
             }),
             speech: Object.freeze({
                 speak: (value, options) => !!host.call('speech.speak', Object.assign({}, options || {}, { text: text(value) })),
@@ -622,6 +659,7 @@ enum AyuScriptInstance {
             storage: Object.freeze({
                 get: (key) => { const v = host.storageGet(text(key)); return v === undefined ? null : v; },
                 set: (key, value) => host.storageSet(text(key), value === null || value === undefined ? null : text(value)),
+                transaction: (values) => host.call('storage.transaction', { values: values && typeof values === 'object' ? values : {} }),
                 remove: (key) => host.storageSet(text(key), null),
                 has: (key) => { const v = host.storageGet(text(key)); return v !== undefined && v !== null; },
                 getJSON: (key, fallback) => { const v = host.storageGet(text(key)); if (v === undefined || v === null) return fallback === undefined ? null : fallback; try { return JSON.parse(v); } catch (e) { return fallback === undefined ? null : fallback; } },
@@ -630,6 +668,12 @@ enum AyuScriptInstance {
             })
         });
         root.ayu = ayu;
+        // VoidGram API names. `void` is a reserved word in JavaScript, so plugin code uses
+        // `voidgram` (or `globalThis.void`); Python, Lua and Rust use `void` directly.
+        // `ayu` stays as an alias: plugins written before the rename keep working unchanged.
+        root.void = ayu;
+        root.$void = ayu;
+        root.voidgram = ayu;
         root.setTimeout = (fn, ms) => host.setTimer(fn, Number(ms) || 0, false);
         root.setInterval = (fn, ms) => host.setTimer(fn, Number(ms) || 0, true);
         root.clearTimeout = (id) => host.clearTimer(Number(id) || 0);
